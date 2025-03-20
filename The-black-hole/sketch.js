@@ -1,78 +1,96 @@
-/*
-Template for IMA's Creative Coding Lab 
+//This is Pupu! A cute creature created by me with the help of professor Marcela. 
+//Pupu is an emotional black hole that feeds on resonance particles around it. Don’t bother it or you’ll see it gets angry and erupts!
 
-Project A: Generative Creatures
-CCLaboratories Biodiversity Atlas 
-*/
-
-let maxRadius;  
-let clickCount = 0;  
-let mood = "calm";  
-let particles = [];  
-let eruptionParticles = [];  
-let f = 400;  
-let b = 250;  
-let br = 100;  
-let shockwaves = [];  
+let maxRadius;  // Maximum radius for the background effect  
+let clickCount = 0;  // Count of mouse clicks  
+let mood = "calm";  // Current mood of the application  
+let particles = [];  // Array to hold particles  
+let eruptionParticles = [];  // Array to hold particles during eruption  
+let f = 400;  // X-coordinate for the center of the black hole  
+let b = 250;  // Y-coordinate for the center of the black hole  
+let br = 100;  // Base radius for the black hole  
+let shockwaves = [];  // Array to hold shockwave effects  
+let a1 = 50, a2 = 100;  // Color parameters for red channel  
+let b1 = 50, b2 = 150;  // Color parameters for green channel  
+let c1 = 150, c2 = 255;  // Color parameters for blue channel  
+let stopRunning = false;  // Flag to check if the animation should stop  
 
 function setup() {  
-    let canvas = createCanvas(800, 500);
-    canvas.parent("p5-canvas-container");
-  noStroke();  
-  maxRadius = dist(0, 0, width / 2, height / 2);  
+  let canvas = createCanvas(800, 500);
+  canvas.parent("p5-canvas-container");  
+  noStroke();  // Disable stroke for shapes  
+  maxRadius = dist(0, 0, width / 2, height / 2);  // Calculate the maximum radius  
   for (let i = 0; i < 20; i++) {  
-    particles.push(createParticle());  
+    particles.push(createParticle());  // Initialize particles  
   }  
 }  
 
-function draw() {  
-  background(255);  
-  drawBackground();  
-  drawShockwaves();  
-  drawEruptionParticles();   
-  drawBlackHole();  
-  drawFace();  
-  updateParticles();  
-  checkMood();  
-  holeSize();  
+function draw() {   
+  if (stopRunning) {  
+    noLoop();  // Stop the draw loop if the flag is set  
+    return;  
+  }  
+  background(255);  // Set background color to white  
+  drawBackground();  // Draw the animated background  
+  drawShockwaves();  // Draw shockwaves  
+  drawEruptionParticles();  // Draw eruption particles  
+  drawBlackHole();  // Draw the black hole  
+  drawFace();  // Draw the expressive face  
+  updateParticles();  // Update particles' positions  
+  checkMood();  // Check and update mood based on clicks  
+  holeSize();  // Adjust the black hole size based on mood  
 }  
 
-// ---------------- 绘制相关函数 -----------------  
+// ---------------- Drawing Functions -----------------  
 
-// 绘制背景  
+// Draw the dynamic background based on mood  
 function drawBackground() {  
-  let t = frameCount * 0.02;  
+  let t = frameCount * 0.02;  // Time variable for animation  
   for (let r = maxRadius; r > 0; r -= 4) {  
     let progress = r / maxRadius;  
-    let red, green, blue;  
+    let red, green, blue;   
 
+    // Change colors based on current mood  
     if (mood === "calm") {  
-      red = map(cos(t + progress * TWO_PI), -1, 1, 50, 100);  
-      green = map(sin(t + progress * TWO_PI), -1, 1, 50, 150);  
-      blue = map(sin(-t + progress * TWO_PI), -1, 1, 150, 255);  
-    } else if (mood === "a little angry") {  
-      red = map(cos(t + progress * TWO_PI), -1, 1, 100, 180);  
-      green = map(sin(t + progress * TWO_PI), -1, 1, 150, 200);  
-      blue = map(sin(-t + progress * TWO_PI), -1, 1, 50, 100);  
+      red = map(cos(t + progress * TWO_PI), -1, 1, a1, a2);  
+      green = map(sin(t + progress * TWO_PI), -1, 1, b1, b2);  
+      blue = map(sin(-t + progress * TWO_PI), -1, 1, c1, c2);  
+    } else if (mood === "a little angry") {   
+      // Adjust color parameters for "a little angry" mood  
+      if (a1 <= 100) a1 += 0.004;  
+      if (a2 <= 180) a2 += 0.006;  
+      if (b1 <= 150) b1 += 0.004;  
+      if (b2 <= 200) b2 += 0.004;  
+      if (c1 >= 50) c1 -= 0.004;  
+      if (c2 >= 100) c2 -= 0.006;  
+      red = map(cos(t + progress * TWO_PI), -1, 1, a1, a2);  
+      green = map(sin(t + progress * TWO_PI), -1, 1, b1, b2);  
+      blue = map(sin(-t + progress * TWO_PI), -1, 1, c1, c2);  
     } else if (mood === "erupt") {  
-      red = map(cos(t + progress * TWO_PI), -1, 1, 160, 255);  
-      green = map(sin(t + progress * TWO_PI), -1, 1, 40, 110);  
-      blue = map(sin(-t + progress * TWO_PI), -1, 1, 40, 90);  
+      // Adjust color parameters for "erupt" mood  
+      if (a1 <= 160) a1 += 0.004;  
+      if (a2 <= 255) a2 += 0.006;  
+      if (b1 >= 40) b1 -= 0.006;  
+      if (b2 >= 110) b2 -= 0.006;  
+      if (c1 >= 40) c1 -= 0.004;  
+      if (c2 >= 90) c2 -= 0.004;  
+      red = map(cos(t + progress * TWO_PI), -1, 1, a1, a2);  
+      green = map(sin(t + progress * TWO_PI), -1, 1, b1, b2);  
+      blue = map(sin(-t + progress * TWO_PI), -1, 1, c1, c2);  
     }  
 
-    fill(red, green, blue, 200);  
-    ellipse(f, b, r * 2, r * 2);  
+    fill(red, green, blue, 200);  // Set color with transparency  
+    ellipse(f, b, r * 2, r * 2);  // Draw background circle  
   }  
 }  
 
-// 绘制黑洞  
+// Draw the black hole  
 function drawBlackHole() {  
   fill(0);  
   push();  
   translate(f + (mood === "erupt" ? random(-3, 3) : 0), b + (mood === "erupt" ? random(-3, 3) : 0));  
   
   let sizeOffset = (mood === "a little angry" ? 5 : mood === "erupt" ? 10 : 0);  
-  
   beginShape();  
   for (let i = 0; i < 50; i++) {  
     let angle = map(i, 0, 50, 0, TWO_PI);  
@@ -84,23 +102,23 @@ function drawBlackHole() {
   pop();  
 }  
 
-// 绘制冲击波  
+// Draw shockwaves that spread out  
 function drawShockwaves() {  
   for (let i = shockwaves.length - 1; i >= 0; i--) {  
     let s = shockwaves[i];  
     noFill();  
     stroke(255, 0, 0, s.alpha);  
     strokeWeight(2);  
-    ellipse(s.x, s.y, s.r);  
-    s.r += 5;  
-    s.alpha -= 10;  
+    ellipse(s.x, s.y, s.r);  // Draw each shockwave  
+    s.r += 5;  // Increase radius  
+    s.alpha -= 10;  // Decrease transparency  
     if (s.alpha <= 0) {  
-      shockwaves.splice(i, 1);  
+      shockwaves.splice(i, 1);  // Remove shockwave if fully transparent  
     }  
   }  
 }  
 
-// 绘制脸部表情  
+// Draw the face with an expression based on mood  
 function drawFace() {  
   push();  
   translate(f, b);  
@@ -109,7 +127,10 @@ function drawFace() {
   noFill();  
   let yOffset = sin(frameCount * 0.2) * 5;  
 
-  if (mood === "calm") {  
+  // Determine which face to draw based on mood  
+  if (mouseIsPressed) {  
+    drawEruptFace(yOffset);  
+  } else if (mood === "calm") {  
     drawCalmFace(yOffset);  
   } else if (mood === "a little angry") {  
     drawAngryFace(yOffset);  
@@ -119,7 +140,7 @@ function drawFace() {
   pop();  
 }  
 
-// 绘制平静表情  
+// Draw a calm face expression  
 function drawCalmFace(yOffset) {  
   fill(255);  
   ellipse(-20, -10 + yOffset, 12, 18);  
@@ -130,7 +151,7 @@ function drawCalmFace(yOffset) {
   arc(0, 15 + yOffset, 30, 15, 0, PI);  
 }  
 
-// 绘制愤怒表情  
+// Draw an angry face expression  
 function drawAngryFace(yOffset) {    
   fill(255);  
   ellipse(-20, -10 + yOffset, 18, 22);  
@@ -143,7 +164,7 @@ function drawAngryFace(yOffset) {
   ellipse(0, 20 + yOffset, 15, 10);  
 }  
 
-// 绘制爆发表情  
+// Draw an erupting face expression  
 function drawEruptFace(yOffset) {   
   fill(255, 255, 0);   
   star(-15, -10 + yOffset, 8, 12, 5);   
@@ -153,16 +174,16 @@ function drawEruptFace(yOffset) {
   stroke(255, 0, 0, 150);    
 }  
 
-// ---------------- 粒子相关函数 ----------------  
+// ---------------- Particle Functions ----------------  
 
-// 创建粒子  
+// Create a new particle with random position  
 function createParticle() {  
   let angle = random(TWO_PI);  
   let radius = random(200, 300);  
   return { x: f + cos(angle) * radius, y: b + sin(angle) * radius };  
 }  
 
-// 更新粒子位置  
+// Update the position of particles toward the black hole  
 function updateParticles() {  
   for (let i = 0; i < 20; i++) {  
     let p = particles[i];  
@@ -174,79 +195,80 @@ function updateParticles() {
     p.x += dx;  
     p.y += dy;  
     fill(0);  
-    ellipse(p.x, p.y, rr, rr);  
-    if (d < 50) particles[i] = createParticle();  
+    ellipse(p.x, p.y, rr, rr);  // Draw each particle  
+    if (d < 50) particles[i] = createParticle();  // Create new particle when close  
   }  
 }  
 
-// 绘制喷发粒子  
+// Draw particles emitted during an eruption  
 function drawEruptionParticles() {  
   for (let i = eruptionParticles.length - 1; i >= 0; i--) {  
     let p = eruptionParticles[i];  
     fill(255, 100, 0, p.lifespan);  
-    ellipse(p.x, p.y, 6, 6);  
+    ellipse(p.x, p.y, 6, 6);  // Draw each eruption particle  
     p.x += p.vx;  
     p.y += p.vy;  
-    p.lifespan -= 5;  
+    p.lifespan -= 5;  // Decrease lifespan of each particle  
     
     if (p.lifespan <= 0) {  
-      eruptionParticles.splice(i, 1);  
+      eruptionParticles.splice(i, 1);  // Remove particle if lifespan is over  
     }  
   }  
 }  
 
-// ---------------- 状态检查与交互 ----------------  
+// ---------------- Mood Check and Interaction ----------------  
 
-// 处理鼠标点击  
+// Handle mouse clicks for interactions  
 function mousePressed() {  
-  clickCount++;  
-  shockwaves.push({ x: mouseX, y: mouseY, r: 10, alpha: 255 });  
+  clickCount++;  // Increment click count  
+  shockwaves.push({ x: mouseX, y: mouseY, r: 10, alpha: 255 });  // Create shockwave effect  
   if (mood === "a little angry" || mood === "erupt") {  
-    emitParticles(15);  
+    emitParticles(15);  // Emit particles when in angry moods  
   }  
 }  
 
-// 生成粒子  
+// Generate eruption particles  
 function emitParticles(num) {  
   for (let i = 0; i < num; i++) {  
     eruptionParticles.push({  
-      x: f, y: b,  
-      vx: random(-3, 3), vy: random(-3, 3),  
-      lifespan: 255  
+      x: f, y: b,  // Start position of particles  
+      vx: random(-3, 3), vy: random(-3, 3),  // Random velocity  
+      lifespan: 255  // Starting lifespan  
     });  
   }  
 }  
 
-// 检查心情状态  
+// Check and update mood based on click count  
 function checkMood() {  
-  if (clickCount >= 10) mood = "erupt";  
-  else if (clickCount >= 5) mood = "a little angry";  
-  else mood = "calm";  
+  if (clickCount >= 10) mood = "erupt";  // Update mood to "erupt"  
+  else if (clickCount >= 5) mood = "a little angry";  // Update mood to "angry"  
+  else mood = "calm";  // Default mood  
 }  
 
-// 调整洞的大小  
+// Adjust the size of the black hole based on mood  
 function holeSize() {  
   if (mood === "erupt") {  
-    br -= 0.2;  
+    br -= 0.2;  // Decrease radius on eruption  
     for (let i = 0; i < 5; i++) {  
       eruptionParticles.push({ x: f, y: b, vx: random(-2, 2), vy: random(-2, 2) });  
     }  
     if (br < 50) {  
-      mood = "calm";  
-      br = 100;  
-      clickCount = 0;  
-      eruptionParticles = [];  
+      mood = "calm";  // Reset mood after eruption  
+      br = 100;  // Reset radius  
+      clickCount = 0;  // Reset click count  
+      eruptionParticles = [];  // Clear eruption particles  
+      stopRunning = true;  // Stop the animation  
     }  
   } else if (br <= 250) {  
-    br += 0.1;  
+    br += 0.1;  // Gradually increase radius  
   } else {  
-    br = 250;  
+    br = 250;  // Cap radius at maximum  
   }  
 }  
 
-// ---------------- 工具函数 ----------------  
+// ---------------- Utility Functions ----------------  
 
-// 绘制星形工具函数  
+// Draw a star shape  
 function star(x, y, radius1, radius2, npoints) {  
   let angle = TWO_PI / npoints;  
   let halfAngle = angle / 2.0;  
