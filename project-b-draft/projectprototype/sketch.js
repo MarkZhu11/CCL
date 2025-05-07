@@ -93,19 +93,13 @@ class NPC {
       let boxY = this.y - 50;
       let boxW = pg.textWidth(displayText) + 20;
       let boxH = 40;
-  
-      // 文字样式
       pg.textAlign(LEFT, TOP);
       pg.textSize(16);
       pg.textFont('sans-serif');
-  
-      // 对话框背景
       pg.fill(255);
       pg.stroke(0);
       pg.strokeWeight(1);
-      pg.rect(boxX, boxY, boxW, boxH, 10); // 圆角对话框
-  
-      // 文字内容
+      pg.rect(boxX, boxY, boxW, boxH, 10); 
       pg.fill(0);
       pg.text(displayText, boxX + 10, boxY + 10);
     }
