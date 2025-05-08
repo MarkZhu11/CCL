@@ -3,6 +3,7 @@ let kunquImgs = [], currentKunquIndex = 0, kunquTimer = 0;
 let audio, audioPlayed = false;
 let kunquPrevIndex = 0;
 let kunquLastSwitch = 0;
+let state = 0;
 
 let currentAlpha = 255;
 let nextAlpha = 0;
@@ -142,7 +143,7 @@ function drawKunquMemory() {
         let y = keypoint.y;
         veilGraphics.blendMode(REMOVE);
         veilGraphics.fill(0, 10);
-        veilGraphics.ellipse(x, y, 30, 30);
+        veilGraphics.ellipse(x, y, 100, 100);
         veilGraphics.blendMode(BLEND);
       }
     }
