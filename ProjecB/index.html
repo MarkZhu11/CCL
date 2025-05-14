@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>CCLab Project</title>
+
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script src="lib/p5.js"></script>
+  <script src="lib/p5.sound.js"></script>
+  <script src="https://unpkg.com/ml5@1/dist/ml5.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-image: url('assets/background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      font-family: 'Times New Roman', serif;
+      font-style: italic;
+      color: white;
+    }
+
+    .main-wrapper {
+      text-align: center;
+      padding: 2em;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 1em;
+      max-width: 90vw;
+      margin: auto;
+      margin-top: 3em;
+    }
+
+    #p5-canvas-container {
+      margin: auto;
+      width: 800px;
+      height: 600px;
+    }
+
+    .input-area {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 2em;
+      flex-wrap: wrap;
+      max-width: 800px;
+      margin: 2em auto 1em auto;
+    }
+
+    .text-box {
+      width: 380px;
+      height: 300px;
+      padding: 1em;
+      background: transparent;
+      border: 1px solid white;
+      border-radius: 0.5em;
+      font-size: 1em;
+      white-space: pre-wrap;
+      overflow-y: auto;
+      color: white;
+      text-align: left;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+
+    .text-box.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="main-wrapper">
+    <h1>He doesn't want them to be forgotten...</h1>
+
+    <div id="p5-canvas-container"></div>
+
+    <div class="input-area">
+      <div id="input1" class="text-box">
+I rarely listen to Kunqu opera. Compared to pop music, these traditional things just don’t catch my interest at all. But I’ve seen someone who truly loves Kunqu — my calligraphy teacher. Haha, I don’t even know if the concept of a “teacher” still exists in your time, a thousand years from now. One time during class, he got inspired and started singing Kunqu for us. 
+Honestly, I even found it a little funny — who still listens to this kind of “old opera”? But to tell the truth, sometimes I wonder: to you, a thousand years in the future, will our pop music — the charts we chase and the songs we play on repeat — feel just as ancient? Maybe you'll find them odd too, maybe even outdated. But deep down, perhaps you’ll feel it: this was the soul of their time.
+Later, I slowly began to realize — Kunqu isn’t just some antique only the elderly care about. It’s also the breath of a city. In my neighborhood, sometimes on weekends, you can faintly hear it drifting through the air, as if the city itself is pausing for a moment to look back at its own reflection. Inside that singing, there’s more than just stories — there’s rhythm, scent, memory. Maybe Kunqu doesn’t need all of us to like it. It just needs someone to remember that once, it helped a city slow down and listen to its own heartbeat.
+      </div>
+
+      <div id="input2" class="text-box">
+One summer, I went to Japan and visited a shrine near Mount Fuji. Many people in the Chinese tour group were amazed by the culture there. But I found myself lost in thought. I was thinking: sure, China doesn’t have torii gates or Shinto shrines, but we have our own religions, our own sacred symbols. So why is it that we’re often so fascinated by things from elsewhere, yet fail to see the treasures right beside us?
+Before entering the hibernation program, I imagined a different scene: if, someday, cultures are bound to disappear, would you rather lose the famous ones known all over the world, or the ones from your own home — the ones so close you’ve almost forgotten their names? I couldn’t make that choice. Not because I didn’t know which was more precious, but because I was certain: the ones that disappear most easily are not the ones everyone remembers, but the ones closest to us — the ones hiding quietly in our everyday lives.
+Like the Suzhou gardens, they’re small, delicate courtyards where the water turns green in summer, there’re “fake mountains”(actually just some unique stones). They’re not built to impress the world, but in their quiet details, they carry our sense of beauty, our rhythm, and our way of life.
+That’s why I’m afraid. Afraid that a thousand years from now, only the “famous” things will be remembered — repeated again and again — while the small, familiar things we grew up with, the ones we never even thought to explain, will quietly fade away. Before I went into hibernation, I wanted to record something — not to prove how great these things were, but just to keep them from being so easily replaced, so easily forgotten. Even if it’s just a little… I wanted to give them a chance to be seen, to be understood, to be remembered.
+      </div>
+    </div>
+
+    <p>You're the rescuer and went into the subject of human hibernation plan's subconsciousness.</p>
+  </div>
+
+  <script src="sketch.js"></script>
+</body>
+
+</html>

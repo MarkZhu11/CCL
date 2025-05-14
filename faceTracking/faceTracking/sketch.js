@@ -1,201 +1,349 @@
-let state = 0;
-let introText = "1000 yrs later, the subject of the human hibernation \n project has yet to awaken......";
-let displayText = "";
-let index = 0;
+// === GLOBAL VARIABLES ===
+let bgImgs = [], bgTiles = [];
+let kunquImgs = [], currentKunquIndex = 0, kunquTimer = 0;
+let audio, audioPlayed = false;
+let kunquPrevIndex = 0;
+let kunquLastSwitch = 0;
+let sketch = 0; // 0 = main menu, 1 = Spring, 2 = Summer, etc.
 
-let DT2 = "";
-let id2 = 0;
+let currentAlpha = 255;
+let nextAlpha = 0;
+let fadeDuration = 2000;
+let isFading = false;
 
-let transitionImg;
+let bgCols = 2, bgRows = 2;
+let bgImgWidth = 400, bgImgHeight = 300;
+let seasonLabels = ["Spring", "Summer", "Autumn", "Winter"];
+
+let titleAlpha = 0;
 let transitionProgress = 0;
+
+let veilGraphics;
+let hands = [];
+let handPose, video;
+
 let isTransitioning = false;
-let nextState = null;
+let transitionStartTime = 0;
+let transitionDuration = 3000; // 3 seconds
+let nextState = 0;
 
 let imgs = [];
-let positions = [];
-let offsetX = 0;
-let offsetY = 0;
-let lastMouseX = 0;
-let lastMouseY = 0;
-let dragging = false;
+let currentImg;
+let nextImg;
+let index = 0;
+let s = 10; // 每个像素块的大小
+let state = 'idle'; // 状态控制：idle, removing, adding
+let transitionSpeed = 100; // 每帧变化像素个数
 
 function preload() {
-  for (let i = 1; i <= 6; i++) {
-    imgs[i] = loadImage("assets/img" + i + ".png.png");
+  for (let i = 0; i < 4; i++) {
+    bgImgs.push(loadImage('assets/' + i + '.jpg'));
   }
+  for (let i = 4; i <= 6; i++) {
+    kunquImgs.push(loadImage('assets/' + i + '.jpg'));
+  }
+  for (let i = 0; i < 12; i++) {
+    imgs[i] = loadImage("assets/element${i}.png");
+  }
+  audio = loadSound("assets/kunqu.mp3");
+  handPose = ml5.handPose();
 }
 
 function setup() {
-  createCanvas(800, 600);
-  textFont("Georgia");
-  textSize(24);
-  fill(255);
-  frameRate(30);
-
-  for (let i = 0; i < imgs.length; i++) {
-    if (imgs[i]) {
-      positions[i] = {
-        x: random(-1000, 1000),
-        y: random(-1000, 1000),
-        w: imgs[i].width / 2,
-        h: imgs[i].height / 2
-      };
+  let canvas = createCanvas(800, 600);
+  canvas.parent("p5-canvas-container");
+   frameRate(60);
+  currentImg = new PixelImage(imgs[index]);
+  let bgIndex = 0;
+  for (let y = 0; y < bgRows; y++) {
+    for (let x = 0; x < bgCols; x++) {
+      let tile = new BGTile(bgImgs[bgIndex], x * bgImgWidth, y * bgImgHeight, bgImgWidth, bgImgHeight, bgIndex);
+      bgTiles.push(tile);
+      bgIndex++;
     }
   }
+
+  video = createCapture(VIDEO);
+  video.size(800, 600);
+  video.hide();
+  handPose.detectStart(video, gotHands);
+
+  veilGraphics = createGraphics(width, height);
+  veilGraphics.background(0);
+  veilGraphics.noStroke();
 }
 
 function draw() {
+  background(0);
   if (isTransitioning) {
     drawTransition();
     return;
   }
-
-  background(0);
-
-  if (state === 0) {
-    drawIntro();
-  } else if (state === 1) {
-    drawScientistDialogue();
-  } else if (state === 2) {
-    drawMindEntry();
-  } else if (state === 3) {
-    drawKunquScene(); // Memory 1: 古镇拼贴
+  if (sketch == 0) {
+      audio.stop()
+      drawMainMenu();
   }
-}
-
-// ---------- 各状态绘制 ---------- //
-
-function drawIntro() {
-  if (frameCount % 4 === 0 && index < introText.length) {
-    displayText += introText.charAt(index);
-    index++;
+  else if (sketch == 1){
+      drawKunquMemory();
+      drawBackButton();
   }
-  textAlign(CENTER, CENTER);
-  text(displayText, width / 2, height / 2);
-
-  if (index === introText.length) {
-    fill(150);
-    textSize(16);
-    text("Press to continue", width / 2, height / 2 + 100);
+  else if (sketch == 2){
+    if (currentImg) {
+    currentImg.display();
   }
-}
-
-function drawScientistDialogue() {
-  background(10, 10, 30);
-  fill(255);
-  textAlign(LEFT, TOP);
-  textSize(20);
-  let dialogue =
-    "The researcher：We couldn't wake him up... His consciousness is still stuck in his dreams... \n\nYou, you have to sneak into his subconsciousness and find a way to wake him up.";
-  if (frameCount % 2 === 0 && id2 < dialogue.length) {
-    DT2 += dialogue.charAt(id2);
-    id2 += 1;
-  }
-  text(DT2, 100, 100, 600, 300);
-  if (id2 === dialogue.length) {
-    fill(180);
-    textSize(16);
-    text("Press any key to continue", 100, 500);
-  }
-}
-
-function drawMindEntry() {
-  background(20, 0, 40);
-  fill(255, 100, 200);
-  textSize(28);
-  textAlign(CENTER);
-  text("You're entering his sub-consciousness……", width / 2, height / 2);
-
-  noFill();
-  stroke(255, 100);
-  for (let i = 0; i < 20; i++) {
-    ellipse(
-      width / 2,
-      height / 2,
-      sin(frameCount * 0.05 + i) * 200,
-      sin(frameCount * 0.05 + i) * 200
-    );
+  if (nextImg && state === 'adding') {
+    nextImg.display();
   }
 
-  fill(180);
-  textSize(16);
-  text("Press to continue", width / 2, height / 2 + 100);
-}
-
-function drawKunquScene() {
-  background(30);
-  fill(255);
-  textSize(24);
-  textAlign(CENTER);
-  text("Memory 1: The Ancient Town", width / 2, 30);
-
-  // 显示拼贴图层，可拖动
-  push();
-  translate(offsetX, offsetY);
-  for (let i = 0; i < imgs.length; i++) {
-    if (imgs[i]) {
-      image(imgs[i], positions[i].x, positions[i].y, positions[i].w, positions[i].h);
+  if (state === 'removing') {
+    currentImg.removePixels(transitionSpeed);
+    if (currentImg.isEmpty()) {
+      index = (index + 1) % imgs.length;
+      nextImg = new PixelImage(imgs[index]);
+      state = 'adding';
+    }
+  } else if (state === 'adding') {
+    nextImg.addPixels(transitionSpeed);
+    if (nextImg.isFull()) {
+      currentImg = nextImg;
+      nextImg = null;
+      state = 'idle';
     }
   }
-  pop();
-
-  fill(200);
-  textSize(16);
-  text("Click anywhere to continue", width / 2, height - 40);
-}
-
-// ---------- Transition 过渡效果 ---------- //
-
-function startTransition(toState) {
-  transitionImg = get(); // capture screen
-  transitionProgress = 0;
-  nextState = toState;
-  isTransitioning = true;
-}
-
-function drawTransition() {
-  transitionProgress += 0.02;
-  image(transitionImg, 0, 0);
-  filter(BLUR, transitionProgress * 6);
-  tint(255, 255 * (1 - transitionProgress));
-  fill(255, 255 * transitionProgress);
-  rect(0, 0, width, height);
-
-  if (transitionProgress >= 1) {
-    isTransitioning = false;
-    state = nextState;
+  drawBackButton();
   }
 }
 
-// ---------- 交互逻辑 ---------- //
+function drawMainMenu() {
+  for (let tile of bgTiles) {
+    tile.update();
+    tile.display();
+  }
+}
+
+function drawKunquMemory() {
+  let now = millis();
+  if (isFading) {
+    tint(255, currentAlpha);
+    image(kunquImgs[kunquPrevIndex], 0, 0, width, height);
+    tint(255, nextAlpha);
+    image(kunquImgs[currentKunquIndex], 0, 0, width, height);
+    noTint();
+
+    let fadeStep = 255 / (fadeDuration / deltaTime);
+    currentAlpha -= fadeStep;
+    nextAlpha += fadeStep;
+    currentAlpha = max(0, currentAlpha);
+    nextAlpha = min(255, nextAlpha);
+
+    if (currentAlpha <= 0 && nextAlpha >= 255) {
+      isFading = false;
+    }
+  } else {
+    image(kunquImgs[currentKunquIndex], 0, 0, width, height);
+  }
+
+  if (hands.length > 0) {
+    for (let i = 0; i < hands.length; i++) {
+      let hand = hands[i];
+      for (let j = 0; j < hand.keypoints.length; j++) {
+        let keypoint = hand.keypoints[j];
+        let x = keypoint.x;
+        let y = keypoint.y;
+        veilGraphics.blendMode(REMOVE);
+        veilGraphics.fill(0, 10);
+        veilGraphics.ellipse(x, y, 100, 100);
+        veilGraphics.blendMode(BLEND);
+      }
+    }
+  }
+
+  tint(255);
+  image(veilGraphics, 0, 0, width, height);
+  noTint();
+}
+
+function drawBackButton() {
+  fill(255, 200);
+  rect(20, 20, 100, 40, 10);
+  fill(0);
+  textAlign(CENTER, CENTER);
+  textSize(16);
+  text("Back", 70, 40);
+}
 
 function mousePressed() {
-  if (state === 0 && index === introText.length) {
-    startTransition(1);
-  } else if (state === 2) {
-    startTransition(3);
-  } else if (state === 3) {
-    dragging = true;
-    lastMouseX = mouseX;
-    lastMouseY = mouseY;
+  if (sketch === 0) {
+    for (let tile of bgTiles) {
+      if (mouseX >= tile.x && mouseX <= tile.x + tile.w &&
+          mouseY >= tile.y && mouseY <= tile.y + tile.h) {
+        tile.active = true;
+        if (tile.label === "Spring") {
+          startTransition(1);
+          if (!audioPlayed) {
+            audio.play();
+            audioPlayed = true;
+          }
+        } else if (tile.label === "Summer") {
+          startTransition(2);
+           if (state === 'idle') {
+    state = 'removing';
+  }
+        } else if (tile.label === "Autumn") {
+          startTransition(3);
+        } else if (tile.label === "Winter") {
+          startTransition(4);
+        }
+      }
+    }
+  } else if (sketch > 0) {
+    if (mouseX >= 20 && mouseX <= 120 && mouseY >= 20 && mouseY <= 60) {
+      startTransition(0);  // Return to main menu with fade
+    }
+  }
+}
+function startTransition(targetState) {
+  isTransitioning = true;
+  transitionStartTime = millis();
+  nextState = targetState;
+}
+function drawTransition() {
+  let elapsed = millis() - transitionStartTime;
+  let progress = constrain(elapsed / transitionDuration, 0, 1);
+  let alpha = progress * 255;
+
+  if (sketch === 0) {
+    // 保留主菜单画面时也能看到 fade
+    drawMainMenu();
+  } else if (sketch === 1) {
+    drawKunquMemory();
+    drawBackButton();
+  }
+
+  fill(0, alpha);
+  noStroke();
+  rect(0, 0, width, height);
+
+  if (progress >= 1) {
+    isTransitioning = false;
+    sketch= nextState;
   }
 }
 
-function mouseReleased() {
-  dragging = false;
+function gotHands(results) {
+  hands = results;
 }
 
-function mouseDragged() {
-  if (state === 3 && dragging) {
-    offsetX += mouseX - lastMouseX;
-    offsetY += mouseY - lastMouseY;
-    lastMouseX = mouseX;
-    lastMouseY = mouseY;
+class BGTile {
+  constructor(img, x, y, w, h, index) {
+    this.img = img;
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.index = index;
+
+    this.pg = createGraphics(w, h);
+    this.img.loadPixels();
+
+    this.active = false;
+    this.alpha = 0;
+    this.label = seasonLabels[index];
+  }
+
+  update() {
+    let particleCount = this.active ? 600 : 150;
+    let maxSize = this.active ? 4 : 15;
+
+    for (let n = 0; n < particleCount; n++) {
+      let px = floor(random(this.w));
+      let py = floor(random(this.h));
+      let imgX = floor(map(px, 0, this.w, 0, this.img.width));
+      let imgY = floor(map(py, 0, this.h, 0, this.img.height));
+      let i = (imgX + imgY * this.img.width) * 4;
+
+      let r = this.img.pixels[i];
+      let g = this.img.pixels[i + 1];
+      let b = this.img.pixels[i + 2];
+
+      this.pg.noStroke();
+      this.pg.fill(r, g, b, this.active ? 255 : 150);
+      this.pg.circle(px, py, random(1, maxSize));
+    }
+
+    if (this.active && this.alpha < 255) {
+      this.alpha += 2;
+    }
+  }
+
+  display() {
+    image(this.pg, this.x, this.y);
+
+    if (this.active) {
+      push();
+      textAlign(CENTER, CENTER);
+      textStyle(ITALIC);
+      textSize(64);
+      fill(255, this.alpha);
+      textFont('Times New Roman');
+      text(this.label, this.x + this.w / 2, this.y + this.h / 2);
+      pop();
+    }
   }
 }
+class PixelImage {
+  constructor(originalImg) {
+    this.img = createImage(800, 600);
+    this.img.copy(originalImg, 0, 0, originalImg.width, originalImg.height, 0, 0, 800, 600);
+    this.img.loadPixels();
 
-function keyPressed() {
-  if (state === 1) {
-    startTransition(2);
+    this.pixels = [];
+    this.allPixels = [];
+
+    for (let x = 0; x < this.img.width; x += s) {
+      for (let y = 0; y < this.img.height; y += s) {
+        let i = (x + y * this.img.width) * 4;
+        let r = this.img.pixels[i];
+        let g = this.img.pixels[i + 1];
+        let b = this.img.pixels[i + 2];
+        let c = color(r, g, b);
+        this.allPixels.push({ x, y, c });
+      }
+    }
+
+    this.pixels = [...this.allPixels]; // 初始全显示
+  }
+
+  display() {
+    for (let p of this.pixels) {
+      fill(p.c);
+      noStroke();
+      rect(p.x, p.y, s, s);
+    }
+  }
+
+  removePixels(n) {
+    for (let i = 0; i < n && this.pixels.length > 0; i++) {
+      let idx = floor(random(this.pixels.length));
+      this.pixels.splice(idx, 1);
+    }
+  }
+
+  addPixels(n) {
+    let currentSet = new Set(this.pixels);
+    let remaining = this.allPixels.filter(p => !currentSet.has(p));
+    for (let i = 0; i < n && remaining.length > 0; i++) {
+      let idx = floor(random(remaining.length));
+      this.pixels.push(remaining[idx]);
+      remaining.splice(idx, 1);
+    }
+  }
+
+  isEmpty() {
+    return this.pixels.length === 0;
+  }
+
+  isFull() {
+    return this.pixels.length === this.allPixels.length;
   }
 }
