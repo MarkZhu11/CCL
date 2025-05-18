@@ -209,7 +209,6 @@ function drawKunquMemory() {
   push();
     translate(width, 0); 
     scale(-1, 1);   
-  let now = millis();
     image(kunquImgs[0], 0, 0, width, height);
   if (hands.length > 0) {
     for (let i = 0; i < hands.length; i++) {
