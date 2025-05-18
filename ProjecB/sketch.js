@@ -1,6 +1,6 @@
 // === GLOBAL VARIABLES ===
 let bgImgs = [], bgTiles = [];
-let kunquImgs = [], currentKunquIndex = 0, kunquTimer = 0;
+let kunquImgs = [];
 let audio, audioPlayed = false;
 let kunquPrevIndex = 0;
 let kunquLastSwitch = 0;
@@ -210,29 +210,8 @@ function drawKunquMemory() {
     translate(width, 0); 
     scale(-1, 1);   
   let now = millis();
-  if (isFading) {
-    tint(255, currentAlpha);
-    image(kunquImgs[kunquPrevIndex], 0, 0, width, height);
-    tint(255, nextAlpha);
-    image(kunquImgs[currentKunquIndex], 0, 0, width, height);
-    noTint();
-
-    let fadeStep = 255 / (fadeDuration / deltaTime);
-    currentAlpha -= fadeStep;
-    nextAlpha += fadeStep;
-    currentAlpha = max(0, currentAlpha);
-    nextAlpha = min(255, nextAlpha);
-
-    if (currentAlpha <= 0 && nextAlpha >= 255) {
-      isFading = false;
-    }
-  } else {
-    image(kunquImgs[currentKunquIndex], 0, 0, width, height);
-  }
-
+    image(kunquImgs[0], 0, 0, width, height);
   if (hands.length > 0) {
-     
-   
     for (let i = 0; i < hands.length; i++) {
       let hand = hands[i];
       for (let j = 0; j < hand.keypoints.length; j++) {
@@ -400,7 +379,7 @@ function showTransitionText(txt) {
   textSize(18);
   textAlign(CENTER);
   text(txt, width / 2, height - 200);
-  transitionAlpha -= 0.9; 
+  transitionAlpha -= 1; 
 }
 
 function gotHands(results) {
