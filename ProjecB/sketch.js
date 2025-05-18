@@ -397,10 +397,10 @@ function drawTransition() {
 
 function showTransitionText(txt) {
   fill(255, transitionAlpha);
-  textSize(20);
+  textSize(18);
   textAlign(CENTER);
   text(txt, width / 2, height - 200);
-  transitionAlpha -= 0.5; 
+  transitionAlpha -= 0.9; 
 }
 
 function gotHands(results) {
