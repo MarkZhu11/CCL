@@ -4,19 +4,25 @@ let kunquImgs = [], currentKunquIndex = 0, kunquTimer = 0;
 let audio, audioPlayed = false;
 let kunquPrevIndex = 0;
 let kunquLastSwitch = 0;
-let sketch = 0; 
+let sketch = -3; 
 let input1, input2;
 let currentAlpha = 255;
 let nextAlpha = 0;
 let fadeDuration = 2000;
 let isFading = false;
-
+let introText =
+  "1000 yrs later, the subject of the human hibernation \n project has yet to awaken......";
+let displayText = "";
+let charindex = 0;
+let DT2 = "";
+let id2 = 0;
 let bgCols = 2, bgRows = 2;
 let bgImgWidth = 400, bgImgHeight = 300;
 let seasonLabels = ["Spring", "Summer", "Autumn", "Winter"];
 
 let titleAlpha = 0;
 let transitionProgress = 0;
+let transitionAlpha = 255;
 
 let veilGraphics;
 let hands = [];
@@ -85,6 +91,16 @@ function draw() {
     drawTransition();
     return;
   }
+  if (sketch == -3){
+    fill(255);
+    drawIntro();
+  }
+  else if (sketch == -2){
+    drawScientistDialogue();
+  }
+  else if (sketch == -1){
+    drawMindEntry();
+  }
   if (sketch == 0) {
       audio.stop();
       audio1.stop();
@@ -92,14 +108,17 @@ function draw() {
       drawMainMenu();
   }
   else if (sketch == 1){
+      
       drawKunquMemory();
       drawBackButton();
       fill(255);
        textAlign(CENTER, CENTER);
      textSize(20);
       text("use your hands to unveil", 400, 50);
+      showTransitionText("Spring is time when memory germinates. \nThe city's memory starts from Kunqu Opera 600 yrs ago...")
   }
   else if (sketch == 2){
+    
     for (let i = 0; i < particles.length; i++) {
     particles[i].update();
     particles[i].display();
@@ -127,13 +146,16 @@ function draw() {
     }
   }
   drawBackButton();
+  showTransitionText("Summer is when memory flourishes. \nIn Suzhou gardens, the city’s memories bloom in every stone, corridor, and ripple of water.")
   }
   else if (sketch == 3){
+    showTransitionText("Autumn is when memory bears fruit. \nThe voices of spring and summer return soft, ripe echoes of heartfelt message from mine mind.")
     kunquButton();
     gdButton();
     drawBackButton();
   }
   else if (sketch == 4){
+    showTransitionText("Now it is winter. Old memories sleep under snow. \nWhat will you remember for the city? Write it down. Let it begin again.")
   fill(255);
   textAlign(CENTER, CENTER);
   textSize(60);
@@ -142,6 +164,40 @@ function draw() {
   }
 }
 
+function drawIntro() {
+  if (frameCount % 4 === 0 && charindex < introText.length) {
+    displayText += introText.charAt(charindex);
+    charindex++;
+  }
+  textAlign(CENTER, CENTER);
+  textSize(30);
+  text(displayText, width / 2, height / 2);
+
+  if (charindex === introText.length) {
+    fill(150);
+    textSize(16);
+    text("Press to continue", width / 2, height / 2 + 100);
+  }
+}
+
+function drawScientistDialogue() {
+  background(10, 10, 30);
+  fill(255);
+  textAlign(LEFT, TOP);
+  textSize(20);
+  let dialogue =
+    "The researcher：We couldn't wake him up... His consciousness is still stuck in his dreams... \n\nYou, you have to sneak into his subconsciousness and find a way to wake him up.";
+  if (frameCount % 2 === 0 && id2 < dialogue.length) {
+    DT2 += dialogue.charAt(id2);
+    id2 += 1;
+  }
+  text(DT2, 100, 100, 600, 300);
+  if (id2 === dialogue.length) {
+    fill(180);
+    textSize(16);
+    text("press to continue", 100, 500);
+  }
+}
 function drawMainMenu() {
   for (let tile of bgTiles) {
     tile.update();
@@ -150,6 +206,9 @@ function drawMainMenu() {
 }
 
 function drawKunquMemory() {
+  push();
+    translate(width, 0); 
+    scale(-1, 1);   
   let now = millis();
   if (isFading) {
     tint(255, currentAlpha);
@@ -172,6 +231,8 @@ function drawKunquMemory() {
   }
 
   if (hands.length > 0) {
+     
+   
     for (let i = 0; i < hands.length; i++) {
       let hand = hands[i];
       for (let j = 0; j < hand.keypoints.length; j++) {
@@ -184,11 +245,14 @@ function drawKunquMemory() {
         veilGraphics.blendMode(BLEND);
       }
     }
+    
   }
 
   tint(255);
   image(veilGraphics, 0, 0, width, height);
+  
   noTint();
+  pop();
 }
 
 function drawBackButton() {
@@ -218,7 +282,40 @@ function gdButton() {
   text("Suzhou Garden", 550, 300);
 }
 
+function drawMindEntry() {
+  background(20, 0, 40);
+  fill(255, 100, 200);
+  textSize(28);
+  textAlign(CENTER);
+  text("You're entering his sub-consciousness……", width / 2, height / 2);
+
+  noFill();
+  stroke(255, 100);
+  for (let i = 0; i < 20; i++) {
+    ellipse(
+      width / 2,
+      height / 2,
+      sin(frameCount * 0.05 + i) * 200,
+      sin(frameCount * 0.05 + i) * 200
+    );
+  }
+
+  fill(180);
+  textSize(16);
+  text("Press to continue", width / 2, height / 2 + 100);
+}
+
 function mousePressed() {
+  transitionAlpha = 255;
+  if (sketch == -3){
+    startTransition(-2);
+  }
+  if (sketch ==-2){
+    startTransition(-1);
+  }
+  if (sketch ==-1){
+    startTransition(0);
+  }
   if (sketch === 0) {
     for (let tile of bgTiles) {
       if (
@@ -296,6 +393,14 @@ function drawTransition() {
     isTransitioning = false;
     sketch = nextState;
   }
+}
+
+function showTransitionText(txt) {
+  fill(255, transitionAlpha);
+  textSize(20);
+  textAlign(CENTER);
+  text(txt, width / 2, height - 200);
+  transitionAlpha -= 0.5; 
 }
 
 function gotHands(results) {
@@ -417,33 +522,37 @@ class PixelImage {
 }
 class Particle {
   constructor(x, y) {
-    this.pos = createVector(x, y);
-    this.vel = createVector(random(-2, 2), random(-2, 2)); 
-    this.acc = createVector(0, 0);
-    this.size = random(5, 20); 
-    this.angle = random(TWO_PI); 
-    this.rotationSpeed = random(-0.05, 0.05); 
-    this.lifespan = 255; 
+    this.x = x;
+    this.y = y;
+    this.vx = random(-2, 2);
+    this.vy = random(-2, 2);
+    this.ax = 0;
+    this.ay = 0;
+    this.size = random(5, 20);
+    this.angle = random(TWO_PI);
+    this.rotationSpeed = random(-0.05, 0.05);
+    this.lifespan = 255;
   }
 
   update() {
-    this.vel.add(this.acc); 
-    this.pos.add(this.vel); 
-    this.acc.mult(0); 
-
-    this.lifespan -= 2; 
+    this.vx += this.ax;
+    this.vy += this.ay;
+    this.x += this.vx;
+    this.y += this.vy;
+    this.ax = 0;
+    this.ay = 0;
+    this.lifespan -= 2;
   }
 
   display() {
     push();
-    translate(this.pos.x, this.pos.y); 
-    rotate(this.angle); 
+    translate(this.x, this.y);
+    rotate(this.angle);
     fill(255, this.lifespan);
     noStroke();
     rectMode(CENTER);
-    rect(0, 0, this.size, this.size); 
+    rect(0, 0, this.size, this.size);
     pop();
-
-    this.angle += this.rotationSpeed; 
+    this.angle += this.rotationSpeed;
   }
 }
